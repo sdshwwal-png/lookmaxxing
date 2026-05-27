@@ -1,571 +1,725 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Your Lookmaxxing</title>
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
-    body {
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #f0f0f0;
-    }
-    header { margin-top:30px; text-align:center; }
-    header h1 {
-      font-size:3em;
-      background: linear-gradient(to right, #f12711, #f5af19);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight:800;
-      letter-spacing:2px;
-    }
-    header p { color:#aaa; font-size:1.2em; margin-top:5px; }
-    .container {
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(15px);
-      border-radius:20px;
-      padding:30px;
-      width:90%;
-      max-width:650px;
-      margin:30px auto;
-      box-shadow:0 25px 45px rgba(0,0,0,0.5);
-    }
-    .upload-area { display:flex; flex-direction:column; align-items:center; gap:20px; }
-    .upload-label {
-      background:#2a2a72;
-      border:2px dashed #f5af19;
-      border-radius:15px;
-      padding:30px;
-      width:100%;
-      text-align:center;
-      cursor:pointer;
-      transition:0.3s;
-    }
-    .upload-label:hover { background:#3a3a92; border-color:#f12711; }
-    .upload-label span { font-size:1.2em; display:block; }
-    #file-input { display:none; }
-    .btn {
-      background: linear-gradient(to right, #f12711, #f5af19);
-      border:none;
-      padding:15px 40px;
-      border-radius:50px;
-      font-size:1.2em;
-      font-weight:bold;
-      color:white;
-      cursor:pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .btn:hover { transform:scale(1.05); box-shadow:0 0 20px rgba(245,175,25,0.6); }
-    .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
-    .loading-spinner {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      margin: 20px 0;
-      gap: 15px;
-    }
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid rgba(245,175,25,0.3);
-      border-top: 5px solid #f5af19;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { color:#f5af19; font-size:1.1em; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test your lookmaxxing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .result { margin-top:20px; display:none; }
+        body {
+            background: #0a0a0a;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+            background-image: radial-gradient(circle at 30% 10%, #1a1a2e, #0a0a0a 90%);
+        }
 
-    /* دائرة النقاط */
-    .score-circle-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 30px;
-      animation: fadeInUp 0.8s ease;
-    }
-    @keyframes fadeInUp {
-      from { opacity:0; transform:translateY(30px); }
-      to { opacity:1; transform:translateY(0); }
-    }
-    .circular-chart {
-      width: 180px;
-      height: 180px;
-    }
-    .circle-bg {
-      fill: none;
-      stroke: #2a2a72;
-      stroke-width: 12;
-    }
-    .circle-progress {
-      fill: none;
-      stroke: url(#gradient);
-      stroke-width: 12;
-      stroke-linecap: round;
-      stroke-dasharray: 565.48; /* 2*PI*90 */
-      stroke-dashoffset: 565.48;
-      transform: rotate(-90deg);
-      transform-origin: center;
-      transition: stroke-dashoffset 1.5s ease-out;
-    }
-    .score-text {
-      font-size: 2.8em;
-      font-weight: bold;
-      fill: #f5af19;
-      text-anchor: middle;
-      dominant-baseline: middle;
-    }
-    .score-label {
-      fill: #aaa;
-      font-size: 0.6em;
-      text-anchor: middle;
-    }
-    .overall-title {
-      margin-top: -10px;
-      color: #fff;
-      font-size: 1.3em;
-    }
+        .container {
+            max-width: 750px;
+            width: 100%;
+            text-align: center;
+        }
 
-    /* تفاصيل التقييم */
-    .details {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      animation: fadeInUp 1s ease;
-    }
-    .metric {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .metric-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1em;
-      color: #ddd;
-    }
-    .metric-name {
-      font-weight: 600;
-    }
-    .metric-value {
-      font-weight: bold;
-      color: #f5af19;
-    }
-    .bar-container {
-      background: #1e1e3f;
-      border-radius: 10px;
-      height: 10px;
-      width: 100%;
-      overflow: hidden;
-    }
-    .bar-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 10px;
-      background: linear-gradient(to right, #f12711, #f5af19);
-      transition: width 1.2s ease-out;
-    }
-    .final-msg {
-      text-align: center;
-      font-size: 1.3em;
-      font-weight: 600;
-      color: #ffd700;
-      margin-top: 10px;
-      animation: fadeInUp 1.2s ease;
-    }
-    footer { margin-top:auto; margin-bottom:20px; color:#888; font-size:0.9em; text-align:center; }
-    canvas { display:none; }
-  </style>
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            background: linear-gradient(135deg, #f9ca24, #f0932b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 12px #f0932b77);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .gender-selection {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .gender-btn {
+            background: #1e1e2f;
+            border: 2px solid #f0932b44;
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            padding: 18px 45px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1e1e2fcc;
+            backdrop-filter: blur(4px);
+        }
+
+        .gender-btn:hover {
+            border-color: #f9ca24;
+            box-shadow: 0 0 25px #f0932b55;
+            background: #2a2a3e;
+        }
+
+        .gender-btn.selected {
+            background: #f0932b;
+            border-color: #f9ca24;
+            color: #000;
+            box-shadow: 0 0 30px #f0932b;
+            font-weight: 900;
+            transform: scale(1.03);
+        }
+
+        .upload-area {
+            background: #1e1e2f;
+            border: 2px dashed #f0932b;
+            border-radius: 20px;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .upload-area.active {
+            display: block;
+        }
+
+        .upload-area:hover {
+            border-color: #f9ca24;
+            background: #2a2a3e;
+            box-shadow: 0 0 25px #f0932b44;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .preview-container {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px #000000aa;
+            display: none;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .loading-text {
+            color: #f9ca24;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            display: none;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .result-card {
+            background: #1e1e2f;
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeInUp 0.7s ease;
+            border: 1px solid #f0932b33;
+            text-align: right;
+        }
+
+        .overall-score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .score-ring {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: conic-gradient(#f9ca24 calc(var(--score) * 1%), #333 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-inner {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #f9ca24;
+        }
+
+        .rating-text {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f9ca24, #f0932b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-row {
+            background: #2a2a3e;
+            border-radius: 14px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-right: 4px solid #f0932b;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .metric-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #f9ca24;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f0932b;
+        }
+
+        .metric-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0 10px;
+        }
+
+        .metric-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f9ca24, #f0932b);
+            border-radius: 10px;
+            transition: width 1.2s ease;
+        }
+
+        .metric-advice {
+            color: #bbb;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .gender-badge {
+            display: inline-block;
+            background: #f0932b22;
+            color: #f9ca24;
+            border: 1px solid #f0932b;
+            border-radius: 30px;
+            padding: 5px 18px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .retry-btn {
+            background: #f0932b;
+            border: none;
+            color: #000;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .retry-btn:hover {
+            background: #f9ca24;
+            box-shadow: 0 0 20px #f9ca2488;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #222;
+            width: 100%;
+            text-align: center;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 500px) {
+            .header h1 { font-size: 2rem; }
+            .gender-btn { padding: 12px 25px; }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Test Your Lookmaxxing</h1>
-    <p>✨ تقييم جاذبيتك بـ 100 نقطة مع تحليل مفصل للوجه ✨</p>
-  </header>
+    <div class="container">
+        <div class="header">
+            <h1>test your lookmaxxing</h1>
+            <p class="subtitle">✦ حلل جاذبيتك و احصل على نصائح لتحسين مظهرك ✦</p>
+        </div>
 
-  <div class="container">
-    <div class="upload-area" id="upload-area">
-      <label class="upload-label" for="file-input">
-        <span>📸 اختر صورة وجهك</span>
-        <small>الصيغ المدعومة: JPG, PNG, WEBP</small>
-      </label>
-      <input type="file" id="file-input" accept="image/*">
-      <button class="btn" id="analyze-btn">قيم جاذبيتي 🚀</button>
-      <div class="loading-spinner" id="loading">
-        <div class="spinner"></div>
-        <p class="loading-text">جارٍ تحليل ملامح الوجه...</p>
-      </div>
+        <!-- اختيار الجنس -->
+        <div class="gender-selection" id="genderSelection">
+            <button class="gender-btn" id="maleBtn" onclick="selectGender('male')">
+                👨 ولد
+            </button>
+            <button class="gender-btn" id="femaleBtn" onclick="selectGender('female')">
+                👩 بنت
+            </button>
+        </div>
+
+        <!-- رفع الصورة -->
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="imageInput" accept="image/*" capture="user">
+            <span class="upload-icon">📸</span>
+            <p>اضغط هنا لرفع صورتك (وجه واحد واضح)</p>
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+            <canvas id="previewCanvas"></canvas>
+        </div>
+
+        <div class="loading-text" id="loading">⏳ جارٍ تحليل ملامحك بالذكاء الاصطناعي...</div>
+
+        <!-- بطاقة النتائج التفصيلية -->
+        <div class="result-card" id="resultCard">
+            <span class="gender-badge" id="genderBadge"></span>
+            <div class="overall-score">
+                <div class="score-ring" id="scoreRing" style="--score:0">
+                    <div class="score-inner" id="scoreValue">0</div>
+                </div>
+                <div>
+                    <div class="rating-text" id="ratingText"></div>
+                    <div style="color:#aaa; margin-top:5px;">الدرجة الإجمالية من 100</div>
+                </div>
+            </div>
+
+            <div id="metricsDetails"></div>
+
+            <button class="retry-btn" id="retryBtn">🔄 تقييم صورة أخرى</button>
+        </div>
     </div>
 
-    <div class="result" id="result-box">
-      <!-- دائرة النقاط من 100 -->
-      <div class="score-circle-wrapper">
-        <svg viewBox="0 0 200 200" class="circular-chart">
-          <defs>
-            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#f12711" />
-              <stop offset="100%" stop-color="#f5af19" />
-            </linearGradient>
-          </defs>
-          <circle class="circle-bg" cx="100" cy="100" r="90" />
-          <circle class="circle-progress" id="circle-progress" cx="100" cy="100" r="90" />
-          <text x="100" y="90" class="score-text" id="score-number">0</text>
-          <text x="100" y="130" class="score-label">من 100</text>
-        </svg>
-        <div class="overall-title">تقييم الجاذبية</div>
-      </div>
-
-      <!-- بطاقات التفاصيل -->
-      <div class="details" id="details-container">
-        <!-- تناسق الوجه -->
-        <div class="metric">
-          <div class="metric-header">
-            <span class="metric-name">تناسق الوجه</span>
-            <span class="metric-value" id="symmetry-val">0%</span>
-          </div>
-          <div class="bar-container">
-            <div class="bar-fill" id="symmetry-bar" style="width:0%"></div>
-          </div>
-        </div>
-        <!-- النسب الذهبية -->
-        <div class="metric">
-          <div class="metric-header">
-            <span class="metric-name">النسب الذهبية</span>
-            <span class="metric-value" id="golden-val">0%</span>
-          </div>
-          <div class="bar-container">
-            <div class="bar-fill" id="golden-bar" style="width:0%"></div>
-          </div>
-        </div>
-        <!-- ميل العين (Canthal Tilt) -->
-        <div class="metric">
-          <div class="metric-header">
-            <span class="metric-name">ميل العين (Canthal Tilt)</span>
-            <span class="metric-value" id="canthal-val">0%</span>
-          </div>
-          <div class="bar-container">
-            <div class="bar-fill" id="canthal-bar" style="width:0%"></div>
-          </div>
-        </div>
-        <!-- زاوية الفك -->
-        <div class="metric">
-          <div class="metric-header">
-            <span class="metric-name">زاوية الفك (Gonial Angle)</span>
-            <span class="metric-value" id="jaw-val">0%</span>
-          </div>
-          <div class="bar-container">
-            <div class="bar-fill" id="jaw-bar" style="width:0%"></div>
-          </div>
-        </div>
-        <!-- نقاء البشرة -->
-        <div class="metric">
-          <div class="metric-header">
-            <span class="metric-name">صفاء البشرة</span>
-            <span class="metric-value" id="skin-val">0%</span>
-          </div>
-          <div class="bar-container">
-            <div class="bar-fill" id="skin-bar" style="width:0%"></div>
-          </div>
-        </div>
-      </div>
-      <p class="final-msg" id="final-message"></p>
+    <div class="footer">
+        هذا الموقع يرجع لشركة s.d © 2025
     </div>
-  </div>
 
-  <canvas id="canvas"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+        // ---------- المتغيرات العامة ----------
+        let selectedGender = null; // 'male' or 'female'
+        let currentImage = null;
+        let modelsLoaded = false;
 
-  <footer>
-    هذا موقع يرجع لي شركة s.d
-  </footer>
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const canvas = document.getElementById('previewCanvas');
+        const loadingText = document.getElementById('loading');
+        const resultCard = document.getElementById('resultCard');
+        const scoreRing = document.getElementById('scoreRing');
+        const scoreValue = document.getElementById('scoreValue');
+        const ratingText = document.getElementById('ratingText');
+        const genderBadge = document.getElementById('genderBadge');
+        const metricsDetails = document.getElementById('metricsDetails');
+        const retryBtn = document.getElementById('retryBtn');
+        const maleBtn = document.getElementById('maleBtn');
+        const femaleBtn = document.getElementById('femaleBtn');
 
-  <script>
-    const MODEL_URL = './models';
+        // ---------- اختيار الجنس ----------
+        function selectGender(gender) {
+            selectedGender = gender;
+            // تحديث الأزرار
+            maleBtn.classList.remove('selected');
+            femaleBtn.classList.remove('selected');
+            if (gender === 'male') maleBtn.classList.add('selected');
+            else femaleBtn.classList.add('selected');
 
-    async function loadModels() {
-      try {
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-        console.log('Models loaded');
-      } catch (err) {
-        console.error(err);
-        alert('فشل تحميل نماذج تحليل الوجه. تأكد من وجود مجلد models مع الملفات المطلوبة.');
-      }
-    }
-    loadModels();
-
-    const fileInput = document.getElementById('file-input');
-    const analyzeBtn = document.getElementById('analyze-btn');
-    const uploadArea = document.getElementById('upload-area');
-    const resultBox = document.getElementById('result-box');
-    const loadingDiv = document.getElementById('loading');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-    // عناصر الدرجة الدائرية
-    const circleProgress = document.getElementById('circle-progress');
-    const scoreNumber = document.getElementById('score-number');
-
-    // عناصر التفاصيل
-    const symmetryVal = document.getElementById('symmetry-val');
-    const symmetryBar = document.getElementById('symmetry-bar');
-    const goldenVal = document.getElementById('golden-val');
-    const goldenBar = document.getElementById('golden-bar');
-    const canthalVal = document.getElementById('canthal-val');
-    const canthalBar = document.getElementById('canthal-bar');
-    const jawVal = document.getElementById('jaw-val');
-    const jawBar = document.getElementById('jaw-bar');
-    const skinVal = document.getElementById('skin-val');
-    const skinBar = document.getElementById('skin-bar');
-    const finalMessage = document.getElementById('final-message');
-
-    // طول محيط الدائرة
-    const CIRCUMFERENCE = 2 * Math.PI * 90; // 565.48
-    circleProgress.style.strokeDasharray = CIRCUMFERENCE;
-    circleProgress.style.strokeDashoffset = CIRCUMFERENCE;
-
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) {
-        document.querySelector('.upload-label span').textContent = '📸 ' + fileInput.files[0].name;
-      }
-    });
-
-    analyzeBtn.addEventListener('click', async () => {
-      if (fileInput.files.length === 0) {
-        alert('يرجى اختيار صورة أولاً');
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const img = await createImageFromFile(file);
-      
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      
-      // إخفاء النتائج السابقة وإظهار التحميل
-      resultBox.style.display = 'none';
-      uploadArea.querySelector('.loading-spinner').style.display = 'flex';
-      analyzeBtn.disabled = true;
-
-      try {
-        const detection = await faceapi.detectSingleFace(canvas,
-          new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks();
-
-        if (!detection) {
-          alert('لم يتم اكتشاف وجه في الصورة. حاول بصورة أوضح.');
-          uploadArea.querySelector('.loading-spinner').style.display = 'none';
-          analyzeBtn.disabled = false;
-          return;
+            // إظهار منطقة الرفع
+            uploadArea.classList.add('active');
+            // إخفاء النتائج السابقة
+            resultCard.style.display = 'none';
+            previewContainer.style.display = 'none';
+            loadingText.style.display = 'none';
+            currentImage = null;
+            imageInput.value = '';
         }
 
-        const landmarks = detection.landmarks.positions;
-        const box = detection.detection.box;
-        
-        // تحليل شامل
-        const analysis = analyzeFace(landmarks, box, ctx, canvas.width, canvas.height);
-        
-        // عرض النتيجة مع أنيميشن
-        displayResults(analysis, file);
-      } catch (err) {
-        console.error(err);
-        alert('حدث خطأ أثناء التحليل.');
-        uploadArea.querySelector('.loading-spinner').style.display = 'none';
-        analyzeBtn.disabled = false;
-      }
-    });
-
-    function createImageFromFile(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          img.src = e.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function analyzeFace(landmarks, box, ctx, imgWidth, imgHeight) {
-      const pts = landmarks;
-      // نقاط أساسية
-      const leftEyeOuter = pts[36], leftEyeInner = pts[39];
-      const rightEyeInner = pts[42], rightEyeOuter = pts[45];
-      const noseTip = pts[30];
-      const mouthLeft = pts[48], mouthRight = pts[54];
-      const leftCheek = pts[0], rightCheek = pts[16];
-      const leftJaw = pts[4];   // نقطة زاوية الفك اليسرى
-      const rightJaw = pts[12]; // نقطة زاوية الفك اليمنى
-      const chin = pts[8];
-      const leftEyebrowOuter = pts[17], rightEyebrowOuter = pts[26];
-
-      // 1. تناسق الوجه الأفقي
-      const midX = (leftEyeInner.x + rightEyeInner.x) / 2;
-      function symmetry(pLeft, pRight) {
-        const dL = Math.abs(pLeft.x - midX), dR = Math.abs(pRight.x - midX);
-        return 1 - Math.abs(dL - dR) / Math.max(dL, dR, 1);
-      }
-      const symMouth = symmetry(mouthLeft, mouthRight);
-      const symEyes = symmetry(leftEyeOuter, rightEyeOuter);
-      const symCheeks = symmetry(leftCheek, rightCheek);
-      const symmetryScore = (symMouth + symEyes + symCheeks) / 3;
-
-      // 2. النسب الذهبية
-      const faceWidth = Math.abs(rightCheek.x - leftCheek.x);
-      const faceHeight = box.height;
-      let goldenScore = 0;
-      if (faceHeight > 0) {
-        const ratio = faceWidth / faceHeight;
-        goldenScore = Math.max(0, 1 - Math.abs(ratio - 0.618) / 0.618);
-      }
-      const eyeDist = Math.abs(rightEyeInner.x - leftEyeInner.x);
-      let eyeRatioScore = 0;
-      if (faceWidth > 0) {
-        const eyeRatio = eyeDist / faceWidth;
-        eyeRatioScore = Math.max(0, 1 - Math.abs(eyeRatio - 0.46) / 0.46);
-      }
-      const eyeMidY = (leftEyeInner.y + rightEyeInner.y) / 2;
-      const mouthMid = { x: (mouthLeft.x + mouthRight.x) / 2, y: (mouthLeft.y + mouthRight.y) / 2 };
-      const noseLength = Math.abs(noseTip.y - eyeMidY);
-      const eyeToMouth = Math.abs(mouthMid.y - eyeMidY);
-      let noseRatioScore = 0;
-      if (eyeToMouth > 0) {
-        const nr = noseLength / eyeToMouth;
-        noseRatioScore = Math.max(0, 1 - Math.abs(nr - 0.55) / 0.55);
-      }
-      const proportionScore = (goldenScore + eyeRatioScore + noseRatioScore) / 3;
-
-      // 3. ميل العين (Canthal tilt) - إيجابي مثالي 5-10 درجات
-      function canthalTiltScore(outer, inner) {
-        const dx = inner.x - outer.x;
-        const dy = inner.y - outer.y;
-        const angleRad = Math.atan2(dy, dx);
-        const angleDeg = angleRad * 180 / Math.PI; // موجب = صاعد نحو الداخل (عيون صياد)
-        // المثالي بين 5 و 10 درجات
-        let score = 0;
-        if (angleDeg >= 5 && angleDeg <= 10) score = 1.0;
-        else if (angleDeg > 0 && angleDeg < 5) score = angleDeg / 5;
-        else if (angleDeg > 10 && angleDeg <= 15) score = 1 - (angleDeg - 10) / 5;
-        else score = Math.max(0, 0.2); // سالب أو كبير جدا
-        return score;
-      }
-      const leftCanthal = canthalTiltScore(leftEyeOuter, leftEyeInner);
-      const rightCanthal = canthalTiltScore(rightEyeOuter, rightEyeInner);
-      const canthalScore = (leftCanthal + rightCanthal) / 2;
-
-      // 4. زاوية الفك (Gonial angle) - اليسرى واليمنى
-      function jawAngleScore(jawPoint, cheekPoint, chinPoint, isLeft) {
-        // الزاوية عند jawPoint بين cheekPoint و chinPoint
-        const v1 = { x: cheekPoint.x - jawPoint.x, y: cheekPoint.y - jawPoint.y };
-        const v2 = { x: chinPoint.x - jawPoint.x, y: chinPoint.y - jawPoint.y };
-        const dot = v1.x * v2.x + v1.y * v2.y;
-        const mag1 = Math.sqrt(v1.x**2 + v1.y**2);
-        const mag2 = Math.sqrt(v2.x**2 + v2.y**2);
-        if (mag1 === 0 || mag2 === 0) return 0.5;
-        let angleRad = Math.acos(dot / (mag1 * mag2));
-        let angleDeg = angleRad * 180 / Math.PI;
-        // الزاوية المثالية للرجال ~125°، للنساء ~120° (سنستخدم 125 للتبسيط)
-        const ideal = 125;
-        const deviation = Math.abs(angleDeg - ideal);
-        return Math.max(0, 1 - deviation / 30); // كلما اقترب أكثر
-      }
-      const leftJawScore = jawAngleScore(leftJaw, leftCheek, chin, true);
-      const rightJawScore = jawAngleScore(rightJaw, rightCheek, chin, false);
-      const jawScore = (leftJawScore + rightJawScore) / 2;
-
-      // 5. صفاء البشرة
-      let skinScore = 0.5;
-      try {
-        const sampleX = Math.floor(leftCheek.x), sampleY = Math.floor(leftCheek.y);
-        const size = 20;
-        const imageData = ctx.getImageData(Math.max(0, sampleX-size), Math.max(0, sampleY-size), size*2, size*2);
-        const data = imageData.data;
-        let sum = 0, count = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          const bri = (data[i] + data[i+1] + data[i+2]) / 3;
-          sum += bri; count++;
+        // ---------- تحميل النماذج ----------
+        async function loadModels() {
+            if (modelsLoaded) return;
+            const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights';
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                modelsLoaded = true;
+            } catch (e) {
+                alert('فشل تحميل نماذج الذكاء الاصطناعي. تأكد من اتصالك بالإنترنت.');
+                console.error(e);
+            }
         }
-        const mean = sum / count;
-        let variance = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          const bri = (data[i] + data[i+1] + data[i+2]) / 3;
-          variance += Math.pow(bri - mean, 2);
+
+        // ---------- رفع الصورة ----------
+        uploadArea.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', handleImageUpload);
+
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!selectedGender) {
+                alert('الرجاء اختيار (ولد أو بنت) أولاً.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    currentImage = img;
+                    drawImageOnCanvas(img);
+                    previewContainer.style.display = 'block';
+                    resultCard.style.display = 'none';
+                    loadingText.style.display = 'block';
+
+                    await loadModels();
+                    await analyzeFace(img);
+                    loadingText.style.display = 'none';
+                };
+            };
+            reader.readAsDataURL(file);
         }
-        variance /= count;
-        skinScore = Math.max(0, 1 - Math.sqrt(variance) / 80);
-      } catch(e) {}
 
-      // النتيجة النهائية من 100 (الأوزان)
-      const finalRaw = (symmetryScore * 0.25 + proportionScore * 0.25 + canthalScore * 0.15 + jawScore * 0.15 + skinScore * 0.2) * 100;
-      const finalScore = Math.min(100, Math.max(0, Math.round(finalRaw)));
-
-      return {
-        finalScore,
-        symmetryPercent: Math.round(symmetryScore * 100),
-        goldenPercent: Math.round(proportionScore * 100),
-        canthalPercent: Math.round(canthalScore * 100),
-        jawPercent: Math.round(jawScore * 100),
-        skinPercent: Math.round(skinScore * 100),
-      };
-    }
-
-    function displayResults(analysis, file) {
-      uploadArea.querySelector('.loading-spinner').style.display = 'none';
-      analyzeBtn.disabled = false;
-      resultBox.style.display = 'block';
-
-      // أنيميشن الدائرة والرقم
-      const targetScore = analysis.finalScore;
-      const offsetStep = CIRCUMFERENCE / 100;
-      let currentScore = 0;
-      const duration = 1500; // ms
-      const startTime = performance.now();
-
-      function animateCircle(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        currentScore = Math.floor(progress * targetScore);
-        scoreNumber.textContent = currentScore;
-        circleProgress.style.strokeDashoffset = CIRCUMFERENCE - (progress * targetScore * offsetStep);
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateCircle);
-        } else {
-          scoreNumber.textContent = targetScore;
+        function drawImageOnCanvas(img) {
+            const maxWidth = 400;
+            const ratio = img.width / img.height;
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth) {
+                width = maxWidth;
+                height = width / ratio;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, width, height);
         }
-      }
-      requestAnimationFrame(animateCircle);
 
-      // تحديث القيم مع أنيميشن الأشرطة بعد تأخير بسيط
-      setTimeout(() => {
-        setMetric(symmetryVal, symmetryBar, analysis.symmetryPercent);
-        setMetric(goldenVal, goldenBar, analysis.goldenPercent);
-        setMetric(canthalVal, canthalBar, analysis.canthalPercent);
-        setMetric(jawVal, jawBar, analysis.jawPercent);
-        setMetric(skinVal, skinBar, analysis.skinPercent);
+        // ---------- تحليل الوجه و حساب المقاييس ----------
+        async function analyzeFace(img) {
+            try {
+                const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks();
+                if (!detection) {
+                    alert('لم يتم اكتشاف وجه! حاول بصورة أوضح بوجه واحد.');
+                    loadingText.style.display = 'none';
+                    return;
+                }
 
-        let msg = '';
-        if (targetScore >= 80) msg = 'ممتاز! وجه جذاب جداً (Chad tier)';
-        else if (targetScore >= 65) msg = 'جيد جداً، إمكانية تحسين ممتازة';
-        else if (targetScore >= 50) msg = 'متوسط، جرب تمارين Mewing والعناية';
-        else msg = 'يحتاج إلى تحسين، لا تيأس واستمر في التطوير!';
-        finalMessage.textContent = msg;
-      }, 600);
-    }
+                const landmarks = detection.landmarks;
+                const points = landmarks.positions;
+                const imgW = img.width;
+                const imgH = img.height;
 
-    function setMetric(valEl, barEl, percent) {
-      valEl.textContent = percent + '%';
-      barEl.style.width = percent + '%';
-    }
-  </script>
+                // استخراج النقاط المهمة
+                const leftEyeOuter = points[36];   // الزاوية الخارجية للعين اليسرى
+                const rightEyeOuter = points[45];  // الزاوية الخارجية للعين اليمنى
+                const noseTip = points[30];
+                const mouthLeft = points[48];
+                const mouthRight = points[54];
+                const jawLeft = points[0];
+                const jawRight = points[16];
+                const chin = points[8];
+                const leftEyeInner = points[39];
+                const rightEyeInner = points[42];
+
+                // القياسات الأساسية
+                const eyeDistance = Math.hypot(rightEyeOuter.x - leftEyeOuter.x, rightEyeOuter.y - leftEyeOuter.y);
+                const faceCenterX = (leftEyeOuter.x + rightEyeOuter.x) / 2;
+                const faceCenterY = (leftEyeOuter.y + rightEyeOuter.y) / 2;
+                const jawWidth = Math.hypot(jawRight.x - jawLeft.x, jawRight.y - jawLeft.y);
+                const faceHeight = Math.abs(chin.y - faceCenterY);
+                const golden = faceHeight / eyeDistance;
+
+                // تناسق العينين (انحراف الأنف عن مركز العينين)
+                const noseDeviation = Math.abs(noseTip.x - faceCenterX) / eyeDistance;
+                const eyeSymmetryScore = Math.max(0, Math.min(100, 100 - noseDeviation * 120));
+
+                // الفك (نسبة العرض للعينين) - تختلف حسب الجنس
+                const jawRatio = jawWidth / eyeDistance;
+                let jawIdealMin, jawIdealMax;
+                if (selectedGender === 'male') { jawIdealMin = 1.85; jawIdealMax = 2.1; }
+                else { jawIdealMin = 1.65; jawIdealMax = 1.9; }
+                const jawMid = (jawIdealMin + jawIdealMax) / 2;
+                const jawDeviation = Math.abs(jawRatio - jawMid);
+                const jawScore = Math.max(0, Math.min(100, 100 - jawDeviation * 45));
+
+                // النسبة الذهبية
+                const goldenIdeal = 1.618;
+                const goldenDeviation = Math.abs(golden - goldenIdeal);
+                const goldenScore = Math.max(0, Math.min(100, 100 - goldenDeviation * 55));
+
+                // تناسق الفم (انحراف مركز الفم عن الأنف)
+                const mouthCenterX = (mouthLeft.x + mouthRight.x) / 2;
+                const mouthDeviation = Math.abs(mouthCenterX - noseTip.x) / eyeDistance;
+                const mouthSymmetryScore = Math.max(0, Math.min(100, 100 - mouthDeviation * 130));
+
+                // محاذاة الأنف (عمودياً) - هل الأنف في منتصف المسافة بين العينين والذقن؟
+                const noseVerticalPos = (noseTip.y - faceCenterY) / faceHeight;
+                const idealNosePos = 0.5; // في المنتصف
+                const nosePosScore = Math.max(0, Math.min(100, 100 - Math.abs(noseVerticalPos - idealNosePos) * 150));
+
+                // حساب الدرجة النهائية بالأوزان
+                const weights = {
+                    eyeSymmetry: 0.3,
+                    jaw: 0.25,
+                    golden: 0.25,
+                    mouthSymmetry: 0.1,
+                    nosePos: 0.1
+                };
+                const finalScore = Math.round(
+                    eyeSymmetryScore * weights.eyeSymmetry +
+                    jawScore * weights.jaw +
+                    goldenScore * weights.golden +
+                    mouthSymmetryScore * weights.mouthSymmetry +
+                    nosePosScore * weights.nosePos
+                );
+
+                // تجميع النتائج في كائن
+                const metrics = {
+                    eyeSymmetry: { score: Math.round(eyeSymmetryScore), icon: '👁️', name: 'تناسق العينين' },
+                    jaw: { score: Math.round(jawScore), icon: '🦷', name: 'خط الفك' },
+                    golden: { score: Math.round(goldenScore), icon: '📐', name: 'النسبة الذهبية' },
+                    mouthSymmetry: { score: Math.round(mouthSymmetryScore), icon: '👄', name: 'تناسق الفم' },
+                    nosePos: { score: Math.round(nosePosScore), icon: '👃', name: 'موضع الأنف' }
+                };
+
+                displayResults(finalScore, metrics);
+                // رسم نقاط المعالم على الصورة (اختياري)
+                drawLandmarksOnCanvas(detection.landmarks);
+
+            } catch (err) {
+                alert('حدث خطأ أثناء التحليل. حاول مجدداً.');
+                console.error(err);
+                loadingText.style.display = 'none';
+            }
+        }
+
+        function drawLandmarksOnCanvas(landmarks) {
+            if (!currentImage) return;
+            drawImageOnCanvas(currentImage);
+            const ctx = canvas.getContext('2d');
+            const scaleX = canvas.width / currentImage.width;
+            const scaleY = canvas.height / currentImage.height;
+
+            ctx.fillStyle = '#f9ca24';
+            landmarks.positions.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x * scaleX, point.y * scaleY, 2, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+            // رسم خطوط تقريبية للفك والعينين
+            ctx.strokeStyle = '#f0932b';
+            ctx.lineWidth = 2;
+            const points = landmarks.positions;
+            // الفك
+            ctx.beginPath();
+            ctx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
+            for (let i = 1; i <= 16; i++) {
+                ctx.lineTo(points[i].x * scaleX, points[i].y * scaleY);
+            }
+            ctx.stroke();
+            // العينين
+            [points[36], points[39], points[42], points[45]].forEach((p, idx) => {
+                ctx.fillStyle = '#f9ca24';
+                ctx.beginPath();
+                ctx.arc(p.x * scaleX, p.y * scaleY, 4, 0, 2*Math.PI);
+                ctx.fill();
+            });
+        }
+
+        // ---------- نصائح مخصصة حسب الجنس ----------
+        function getAdvice(metricKey, score, gender) {
+            const advices = {
+                eyeSymmetry: {
+                    male: [
+                        "ممتاز! عيناك متناسقتان، حافظ على نوم كافٍ.",
+                        "جيد، لكن يمكن تحسين تناسق الحاجبين بقص خفيف.",
+                        "ضعف بسيط.. جرّب تمارين تقوية عضلات العين (Eye Yoga).",
+                        "تناسق العينين منخفض، قد يساعدك فحص نظر لتصحيح أي انحراف."
+                    ],
+                    female: [
+                        "تناسق رائع! أبرزي جمال عينيك بالمكياج المناسب.",
+                        "جيد، جربي رسم الأيلاينر لموازنة المسافات.",
+                        "بعض التمارين البسيطة لعضلات العين قد تعزز التناسق.",
+                        "استشيري خبيرة تجميل لتحسين مظهر العينين بالظلال."
+                    ]
+                },
+                jaw: {
+                    male: [
+                        "فك قوي ومحدد، استمر في تمرين المضغ (mewing).",
+                        "جيد، يمكنك تحسين تعريف الفك بتمارين الفك والمضغ.",
+                        "فك متوسط، ابدأ بروتين مضغ العلكة الصلبة لتقوية العضلات.",
+                        "ضعف في خط الفك، جرب mewing بإشراف مختص وتمارين الذقن."
+                    ],
+                    female: [
+                        "فك متناسق، حافظي على ترطيب بشرتك لإبرازه.",
+                        "لطيف! الكونتور (Contour) يمنحك تحديداً إضافياً.",
+                        "يمكن تحسينه بتمارين خفيفة للفك ووضعية لسان صحيحة.",
+                        "استخدمي كونتور الكريم لإبراز خط الفك بشكل ناعم."
+                    ]
+                },
+                golden: {
+                    male: [
+                        "نسب وجهك ذهبية! هيكل عظمي مثالي.",
+                        "مقبول، قصة الشعر الصحيحة تبرز التوازن.",
+                        "انتبه لطول الذقن، تصفيفة شعر مناسبة قد توازن النسب.",
+                        "نسبة الوجه بعيدة عن المثالية، استشر مصفف شعر محترف."
+                    ],
+                    female: [
+                        "وجهك ينعم بنسب جميلة، أكملي إطلالتك بثقة.",
+                        "جيد، تسريحة شعر تزيد من طول الوجه قد تفيد.",
+                        "قصة شعر متوسطة الطول مع حجم جانبي قد تحسن النسبة.",
+                        "النسب تحتاج تحسين، جربي تسريحات تضيف ارتفاعاً للتاج."
+                    ]
+                },
+                mouthSymmetry: {
+                    male: [
+                        "ابتسامة متناسقة، حافظ على أسنانك.",
+                        "تناسق جيد، تقويم الأسنان قد يعززها أكثر.",
+                        "بعض التمارين لعضلات الفم قد ترفع التناسق.",
+                        "زيارة طبيب أسنان لفحص الإطباق قد تكون مفيدة."
+                    ],
+                    female: [
+                        "فم جميل ومتناسق، أحمر شفاه يبرز جماله.",
+                        "جيد، استخدمي محدد شفاه لضبط التناسق.",
+                        "تمارين بسيطة لعضلات الفم قد تحسن الابتسامة.",
+                        "استشارة طبيب تجميل الأسنان للحصول على ابتسامة مثالية."
+                    ]
+                },
+                nosePos: {
+                    male: [
+                        "موضع الأنف مثالي، لا تحتاج شيئاً.",
+                        "جيد جداً، شكل الوجه متوازن.",
+                        "انحراف بسيط، قد تكون وضعية النوم هي السبب.",
+                        "موضع الأنف غير مثالي، استشر مختص أنف وأذن."
+                    ],
+                    female: [
+                        "أنفك في مكانه الصحيح، رائع.",
+                        "جيد، تقنية الكونتور قد تخلق توازناً بصرياً.",
+                        "بعض تقنيات المكياج تخفي الانحراف الطفيف.",
+                        "يمكن استشارة طبيب تجميل لتقييم الخيارات."
+                    ]
+                }
+            };
+
+            const level = score >= 85 ? 0 : score >= 70 ? 1 : score >= 50 ? 2 : 3;
+            return advices[metricKey][gender][level];
+        }
+
+        // ---------- عرض النتائج ----------
+        function displayResults(totalScore, metrics) {
+            scoreValue.textContent = totalScore;
+            scoreRing.style.setProperty('--score', totalScore);
+            resultCard.style.display = 'block';
+            genderBadge.textContent = selectedGender === 'male' ? '👨 تقييم ولد' : '👩 تقييم بنت';
+
+            let rating = '';
+            if (totalScore >= 90) rating = '🔥 أسطورة الجاذبية';
+            else if (totalScore >= 75) rating = '👑 ملك/ملكة الجمال';
+            else if (totalScore >= 60) rating = '✨ جذاب';
+            else if (totalScore >= 40) rating = '👍 حسن المظهر';
+            else rating = '💪 قابل للتحسين';
+            ratingText.textContent = rating;
+
+            // بناء بطاقات المقاييس
+            let html = '';
+            for (let key in metrics) {
+                const m = metrics[key];
+                const advice = getAdvice(key, m.score, selectedGender);
+                html += `
+                    <div class="metric-row">
+                        <div class="metric-header">
+                            <span class="metric-name">${m.icon} ${m.name}</span>
+                            <span class="metric-value">${m.score}%</span>
+                        </div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" style="width:${m.score}%"></div>
+                        </div>
+                        <div class="metric-advice">💡 ${advice}</div>
+                    </div>
+                `;
+            }
+            metricsDetails.innerHTML = html;
+
+            // إعادة تشغيل حركة الأشرطة (لأنها عناصر جديدة)
+            setTimeout(() => {
+                document.querySelectorAll('.metric-fill').forEach(f => f.style.width = f.style.width);
+            }, 50);
+        }
+
+        // ---------- إعادة التعيين ----------
+        retryBtn.addEventListener('click', () => {
+            resultCard.style.display = 'none';
+            previewContainer.style.display = 'none';
+            loadingText.style.display = 'none';
+            currentImage = null;
+            imageInput.value = '';
+            // يبقى الجنس محدداً ومنطقة الرفع ظاهرة
+        });
+    </script>
 </body>
 </html>
